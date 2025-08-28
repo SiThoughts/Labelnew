@@ -1,0 +1,88 @@
+# Quick Start Guide
+
+This guide will get you up and running with the YOLOv8 Tiny Defect Detection system in just a few steps.
+
+## Prerequisites
+
+- Python 3.8+
+- NVIDIA GPU with CUDA support (recommended)
+- Dataset at `/path/to/your/EV_dataset` (or similar structure)
+
+## 1. Setup (5 minutes)
+
+```bash
+# Clone and enter the project directory
+cd yolo_defect_detection
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## 2. Configure Dataset (2 minutes)
+
+Edit `config/dataset.yaml`:
+- Update the `path` to point to your dataset root directory
+- Verify `names` and `nc` match your defect classes
+
+## 3. Validate Dataset (1 minute)
+
+```bash
+python utils/dataset_validator.py --config config/dataset.yaml --output ./dataset_analysis
+```
+
+Review the generated report to ensure your dataset is correctly formatted.
+
+## 4. Train the Model (2-6 hours depending on dataset size)
+
+```bash
+python scripts/train_yolo.py --config config/dataset.yaml --hyperparams config/hyperparameters.yaml
+```
+
+This runs the complete two-phase training pipeline. The best model will be saved to `runs/detect/tiny_defect_phase2/weights/best.pt`.
+
+## 5. Export to ONNX (1 minute)
+
+```bash
+python scripts/export_onnx.py --model runs/detect/tiny_defect_phase2/weights/best.pt --output-dir ./models
+```
+
+This creates several ONNX variants, including the zero-preprocessing `model_hwc_uint8_div255.onnx`.
+
+## 6. Run Inference (30 seconds)
+
+```bash
+python scripts/inference_demo.py --model models/model_hwc_uint8_div255.onnx --image /path/to/test/image.png --output ./results
+```
+
+The script will detect defects and save a visualization in the `./results` directory.
+
+## 7. Test the Model (2 minutes)
+
+```bash
+python tests/test_onnx_models.py --model models/model_hwc_uint8_div255.onnx --test-images /path/to/test/images --comprehensive
+```
+
+This runs a comprehensive test suite and generates a detailed performance report.
+
+## Key Files
+
+- **Best Model**: `runs/detect/tiny_defect_phase2/weights/best.pt`
+- **Zero-Preprocessing ONNX**: `models/model_hwc_uint8_div255.onnx`
+- **Training Results**: `runs/detect/tiny_defect_phase2/results.csv`
+- **Test Report**: `./test_results/comprehensive_test_results.json`
+
+## Next Steps
+
+- Read the full [README.md](README.md) for detailed information
+- Check the [TRAINING_GUIDE.md](docs/TRAINING_GUIDE.md) for advanced training tips
+- See [ONNX_EXPORT_GUIDE.md](docs/ONNX_EXPORT_GUIDE.md) for deployment options
+- Consult [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) if you encounter issues
+
+## Support
+
+If you encounter any issues, check the troubleshooting guide or review the console output for detailed error messages.
+
